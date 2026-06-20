@@ -7,8 +7,9 @@ import {
   Tv2, Film, Clapperboard, RefreshCw, CheckCircle,
   Trash2, ChevronDown, ChevronUp, GripVertical,
   Cloud, HardDrive, Database, Globe, Clock, Star,
-  Tag, Info, List,
+  Tag, Info, List, Radio,
 } from "lucide-react";
+import { crearContenido } from "@/app/actions";
 
 /* ═══════════════════════════ TIPOS ═════════════════════════ */
 export type ContentType = "ANIME" | "SERIE" | "PELÍCULA";
@@ -222,6 +223,7 @@ export default function ContentFormClient({ type }: { type: ContentType }) {
   const [title,    setTitle]    = useState("");
   const [synopsis, setSynopsis] = useState("");
   const [status,   setStatus]   = useState<"draft"|"on"|"off">("draft");
+  const [estadoEmision, setEstadoEmision] = useState<"en emisión"|"completo"|"próximamente">("en emisión");
   const [cover,    setCover]    = useState("");
 
   /* Detalles */
@@ -301,17 +303,48 @@ export default function ContentFormClient({ type }: { type: ContentType }) {
     return errs;
   }
 
-  function handleSubmit(publish: boolean) {
+  const TIPO_DB: Record<ContentType, "anime" | "serie" | "pelicula"> = {
+    ANIME: "anime", SERIE: "serie", PELÍCULA: "pelicula",
+  };
+
+  async function handleSubmit(publish: boolean) {
     const errs = validate();
     if (errs.length) { setErrors(errs); return; }
     setErrors([]);
-    if (publish) setStatus("on");
+    const finalStatus = publish ? "on" : status;
     setSaving(true);
-    setTimeout(() => {
+    try {
+      await crearContenido({
+        tipo: TIPO_DB[type],
+        titulo: title,
+        sinopsis: synopsis,
+        estadoPublicacion: finalStatus,
+        estadoEmision: meta.hasEpisodes ? estadoEmision : null,
+        portada: cover,
+        anio: year,
+        episodiosTotal: meta.hasEpisodes ? (totalEps === "" ? null : totalEps) : null,
+        duracion: duration === "" ? null : duration,
+        studio,
+        pais: country,
+        trailerUrl: trailer,
+        genero: genre ? [genre] : [],
+        idioma: lang,
+        rating,
+        tags,
+        malId: type === "ANIME" ? externalId : "",
+        tmdbId,
+        servidores: { onedrive: svOnedrive, gdrive: svGdrive, mega: svMega },
+        episodios: meta.hasEpisodes
+          ? episodes.map(ep => ({ numero: ep.num, titulo: ep.title, temporada: season, urls: ep.urls }))
+          : [],
+      });
       setSaving(false);
       setSaved(true);
       setTimeout(() => router.push(meta.back), 1200);
-    }, 1000);
+    } catch {
+      setSaving(false);
+      setErrors(["No se pudo guardar el contenido. Intenta nuevamente."]);
+    }
   }
 
   const serverFlags = { onedrive: svOnedrive.enabled, gdrive: svGdrive.enabled, mega: svMega.enabled };
@@ -437,6 +470,31 @@ export default function ContentFormClient({ type }: { type: ContentType }) {
             ))}
           </div>
         </Field>
+
+        {/* Estado de emisión (solo anime/series) */}
+        {meta.hasEpisodes && (
+          <Field label="Estado de emisión" hint="Se muestra en la ficha pública del título.">
+            <div className="flex flex-wrap gap-2">
+              {([["en emisión","En emisión","#39ff14"], ["completo","Completo","#00f5ff"], ["próximamente","Próximamente","#ffe600"]] as const).map(([val, label, color]) => (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => setEstadoEmision(val)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                  style={{
+                    background: estadoEmision === val ? `${color}18` : "rgba(255,255,255,0.04)",
+                    border: `1px solid ${estadoEmision === val ? color : "rgba(255,255,255,0.09)"}`,
+                    color: estadoEmision === val ? color : "var(--text-muted)",
+                    boxShadow: estadoEmision === val ? `0 0 14px ${color}18` : "none",
+                  }}
+                >
+                  <Radio size={12} />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </Field>
+        )}
 
         {/* Trailer */}
         <Field label="Trailer (URL de YouTube)" hint="Opcional — se muestra en la ficha del título.">

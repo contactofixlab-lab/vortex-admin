@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, Plus, Pencil, Trash2, ChevronUp, ChevronDown, Filter } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search, Plus, Pencil, Trash2, ChevronUp, ChevronDown, Filter, RefreshCw } from "lucide-react";
+import { eliminarContenido } from "@/app/actions";
 
 export type ContentType = "ANIME" | "SERIE" | "PELÍCULA";
 
@@ -42,13 +44,26 @@ interface Props {
 }
 
 export default function CatalogPage({ type, items }: Props) {
+  const router = useRouter();
   const [search, setSearch]     = useState("");
   const [statusF, setStatusF]   = useState("all");
   const [sortKey, setSortKey]   = useState<keyof CatalogItem>("id");
   const [sortDir, setSortDir]   = useState<"asc"|"desc">("desc");
   const [showFilters, setShowFilters] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const color = TYPE_COLOR[type];
+
+  async function handleDelete(item: CatalogItem) {
+    if (!window.confirm(`¿Eliminar "${item.title}" del catálogo? Esta acción no se puede deshacer.`)) return;
+    setDeletingId(item.id);
+    try {
+      await eliminarContenido(item.id);
+      router.refresh();
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   function toggleSort(key: keyof CatalogItem) {
     if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
@@ -187,8 +202,13 @@ export default function CatalogPage({ type, items }: Props) {
                       <button className="btn-ghost" style={{ padding: "5px 10px" }} title="Editar">
                         <Pencil size={13} />
                       </button>
-                      <button className="btn-danger" title="Eliminar">
-                        <Trash2 size={13} />
+                      <button
+                        className="btn-danger"
+                        title="Eliminar"
+                        disabled={deletingId === item.id}
+                        onClick={() => handleDelete(item)}
+                      >
+                        {deletingId === item.id ? <RefreshCw size={13} className="animate-spin" /> : <Trash2 size={13} />}
                       </button>
                     </div>
                   </td>

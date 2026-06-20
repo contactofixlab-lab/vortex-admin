@@ -7,7 +7,7 @@ import {
   PieChart, Pie, Cell,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   FunnelChart, Funnel, LabelList,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer,
 } from "recharts";
 import {
@@ -151,14 +151,18 @@ export default function DashboardClient() {
             title="Tráfico semanal"
             sub="Visitas, descargas y nuevos usuarios (últimos 7 días)"
           />
-          <Legend
-            payload={[
-              { value: "Visitas",   type: "circle", color: "#bf5fff" },
-              { value: "Descargas", type: "circle", color: "#00f5ff" },
-              { value: "Usuarios",  type: "circle", color: "#39ff14" },
-            ]}
-            wrapperStyle={{ fontSize: 11, paddingBottom: 8 }}
-          />
+          <div className="flex items-center gap-4 mb-2" style={{ paddingBottom: 8 }}>
+            {[
+              { value: "Visitas",   color: "#bf5fff" },
+              { value: "Descargas", color: "#00f5ff" },
+              { value: "Usuarios",  color: "#39ff14" },
+            ].map(({ value, color }) => (
+              <span key={value} className="flex items-center gap-1.5" style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
+                {value}
+              </span>
+            ))}
+          </div>
           <ResponsiveContainer width="100%" height={190}>
             <AreaChart data={TRAFFIC_7D} margin={{ top: 0, right: 4, left: -22, bottom: 0 }}>
               <defs>
@@ -190,7 +194,7 @@ export default function DashboardClient() {
                   paddingAngle={4} dataKey="value" strokeWidth={0}>
                   {SERVERS_DONUT.map(({ color }, i) => <Cell key={i} fill={color} />)}
                 </Pie>
-                <Tooltip contentStyle={TT_STYLE} formatter={(v:number) => [`${v}%`, ""]}/>
+                <Tooltip contentStyle={TT_STYLE} formatter={(v) => [`${v}%`, ""]}/>
               </PieChart>
             </ResponsiveContainer>
             <div className="flex flex-col gap-2 w-full mt-1">
@@ -218,8 +222,8 @@ export default function DashboardClient() {
             <FunnelChart>
               <Tooltip
                 contentStyle={TT_STYLE}
-                formatter={(v: number, _: string, props: { payload?: { name: string } }) => [
-                  fmt(v),
+                formatter={(v, _, props) => [
+                  fmt(Number(v)),
                   props.payload?.name ?? "",
                 ]}
               />
@@ -229,14 +233,14 @@ export default function DashboardClient() {
                   fill="#fff"
                   fontSize={10}
                   dataKey="name"
-                  formatter={(v: string) => v}
+                  formatter={(v) => v}
                 />
                 <LabelList
                   position="right"
                   fill="var(--text-muted)"
                   fontSize={10}
                   dataKey="value"
-                  formatter={(v: number) => fmt(v)}
+                  formatter={(v) => fmt(Number(v))}
                 />
               </Funnel>
             </FunnelChart>
@@ -265,14 +269,18 @@ export default function DashboardClient() {
               <Bar dataKey="peliculas" name="Películas" fill="#ffe600" radius={[3,3,0,0]}/>
             </BarChart>
           </ResponsiveContainer>
-          <Legend
-            payload={[
-              { value:"Anime",    type:"square", color:"#00f5ff" },
-              { value:"Series",   type:"square", color:"#ff2d78" },
-              { value:"Películas",type:"square", color:"#ffe600" },
-            ]}
-            wrapperStyle={{ fontSize:10, marginTop: 4 }}
-          />
+          <div className="flex items-center justify-center gap-4" style={{ marginTop: 4 }}>
+            {[
+              { value: "Anime",     color: "#00f5ff" },
+              { value: "Series",    color: "#ff2d78" },
+              { value: "Películas", color: "#ffe600" },
+            ].map(({ value, color }) => (
+              <span key={value} className="flex items-center gap-1.5" style={{ fontSize: 10, color: "var(--text-muted)" }}>
+                <span className="w-2 h-2 rounded-sm flex-shrink-0" style={{ background: color }} />
+                {value}
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* LINE — crecimiento de usuarios */}
@@ -309,14 +317,18 @@ export default function DashboardClient() {
               <Tooltip contentStyle={TT_STYLE}/>
             </RadarChart>
           </ResponsiveContainer>
-          <Legend
-            payload={[
-              { value:"Anime",    type:"circle", color:"#00f5ff" },
-              { value:"Series",   type:"circle", color:"#ff2d78" },
-              { value:"Películas",type:"circle", color:"#ffe600" },
-            ]}
-            wrapperStyle={{ fontSize:10 }}
-          />
+          <div className="flex items-center justify-center gap-4" style={{ fontSize: 10 }}>
+            {[
+              { value: "Anime",     color: "#00f5ff" },
+              { value: "Series",    color: "#ff2d78" },
+              { value: "Películas", color: "#ffe600" },
+            ].map(({ value, color }) => (
+              <span key={value} className="flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
+                {value}
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* TOP 5 — más descargados */}
