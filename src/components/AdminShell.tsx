@@ -13,6 +13,7 @@ const TITLES: Record<string, { title: string; sub: string }> = {
   "/series/nuevo":    { title: "Nueva Serie",     sub: "Agregar título al catálogo" },
   "/peliculas":       { title: "Películas",       sub: "Gestión del catálogo de películas" },
   "/peliculas/nuevo": { title: "Nueva Película",  sub: "Agregar título al catálogo" },
+  "/usuarios":        { title: "Usuarios",        sub: "Registro de usuarios registrados" },
   "/configuracion":   { title: "Configuración",   sub: "Ajustes generales del sistema" },
 };
 

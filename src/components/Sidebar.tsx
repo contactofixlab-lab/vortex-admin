@@ -14,6 +14,7 @@ const NAV = [
   { href: "/anime",         label: "Anime",         icon: Tv2,             color: "#00f5ff" },
   { href: "/series",        label: "Series",        icon: Film,            color: "#ff2d78" },
   { href: "/peliculas",     label: "Películas",     icon: Clapperboard,    color: "#ffe600" },
+  { href: "/usuarios",      label: "Usuarios",      icon: Shield,          color: "#39ff14" },
   { href: "/configuracion", label: "Configuración", icon: Settings,        color: "#39ff14" },
 ];
 
@@ -66,7 +67,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         }}
       >
         <div className="relative flex-shrink-0" style={{ width: 36, height: 36 }}>
-          <Image src="/logo.png" alt="Vortex" fill sizes="36px" style={{ objectFit: "contain" }} />
+          <Image src="/vortex logo.png" alt="Vortex" fill sizes="36px" style={{ objectFit: "contain" }} />
         </div>
         <AnimatePresence initial={false}>
           {!collapsed && (
