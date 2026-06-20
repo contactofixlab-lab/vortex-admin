@@ -6,7 +6,8 @@ export type UsuarioRegistro = {
   nombre: string;
   email: string;
   createdAt: string;
-  ultimaConexion: string | null;
+  createdAtRaw: string;
+  ultimaConexion: string;
 };
 
 export async function obtenerTodosLosUsuarios(): Promise<UsuarioRegistro[]> {
@@ -41,6 +42,7 @@ export async function obtenerTodosLosUsuarios(): Promise<UsuarioRegistro[]> {
       nombre: r.nombre as string,
       email: r.email as string,
       createdAt: new Date(r.createdAt as string).toLocaleString("es-CL"),
+      createdAtRaw: r.createdAt as string,
       ultimaConexion,
     };
   });
