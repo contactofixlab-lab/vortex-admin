@@ -16,22 +16,32 @@ export async function obtenerTodosLosUsuarios(): Promise<UsuarioRegistro[]> {
       u.nombre,
       u.email,
       u.created_at as "createdAt",
-      CASE
-        WHEN COUNT(s.id) > 0 AND MAX(s.expires_at) > now() THEN 'Conectado ahora'
-        WHEN COUNT(s.id) > 0 THEN 'Última: ' || to_char(MAX(s.expires_at), 'DD/MM/YYYY HH24:MI')
-        ELSE 'Nunca se conectó'
-      END as "ultimaConexion"
+      MAX(s.expires_at) as "maxExpires"
     FROM usuario u
     LEFT JOIN sesion s ON s.usuario_id = u.id
     GROUP BY u.id, u.nombre, u.email, u.created_at
     ORDER BY u.created_at DESC
   `;
 
-  return rows.map((r) => ({
-    id: r.id as number,
-    nombre: r.nombre as string,
-    email: r.email as string,
-    createdAt: new Date(r.createdAt as string).toLocaleString("es-CL"),
-    ultimaConexion: r.ultimaConexion as string,
-  }));
+  return rows.map((r) => {
+    const maxExpires = r.maxExpires ? new Date(r.maxExpires as string) : null;
+    const now = new Date();
+    let ultimaConexion = "Nunca se conectó";
+
+    if (maxExpires) {
+      if (maxExpires > now) {
+        ultimaConexion = "Conectado ahora";
+      } else {
+        ultimaConexion = `Última: ${maxExpires.toLocaleString("es-CL")}`;
+      }
+    }
+
+    return {
+      id: r.id as number,
+      nombre: r.nombre as string,
+      email: r.email as string,
+      createdAt: new Date(r.createdAt as string).toLocaleString("es-CL"),
+      ultimaConexion,
+    };
+  });
 }

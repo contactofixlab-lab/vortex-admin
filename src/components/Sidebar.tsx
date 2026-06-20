@@ -59,42 +59,20 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
       {/* ── Logo ── */}
       <div
-        className="flex items-center gap-3 px-4 flex-shrink-0"
+        className="flex items-center justify-center px-4 flex-shrink-0"
         style={{
-          height: 64,
+          height: 80,
           borderBottom: "1px solid rgba(255,255,255,0.07)",
           background: "rgba(191,95,255,0.04)",
         }}
       >
-        <div className="relative flex-shrink-0" style={{ width: 36, height: 36 }}>
-          <Image src="/vortex logo.png" alt="Vortex" fill sizes="36px" style={{ objectFit: "contain" }} />
-        </div>
-        <AnimatePresence initial={false}>
-          {!collapsed && (
-            <motion.div
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -8 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden"
-            >
-              <span
-                className="text-base font-black tracking-widest whitespace-nowrap"
-                style={{
-                  fontFamily: "var(--font-orbitron)",
-                  background: "linear-gradient(90deg, #bf5fff, #00f5ff)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                VORTEX
-              </span>
-              <span className="block text-xs whitespace-nowrap" style={{ color: "var(--text-muted)", letterSpacing: "0.14em" }}>
-                ADMIN CONSOLE
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <motion.div
+          animate={{ width: collapsed ? 36 : 64, height: collapsed ? 36 : 64 }}
+          transition={{ duration: 0.3 }}
+          className="relative flex-shrink-0"
+        >
+          <Image src="/vortex logo.png" alt="Vortex" fill sizes={collapsed ? "36px" : "64px"} style={{ objectFit: "contain" }} />
+        </motion.div>
       </div>
 
       {/* ── Navigation ── */}
