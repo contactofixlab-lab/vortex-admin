@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, Plus, Pencil, Trash2, ChevronUp, ChevronDown, Filter, RefreshCw } from "lucide-react";
 import { eliminarContenido } from "@/app/actions";
+import Select from "./Select";
 
 export type ContentType = "ANIME" | "SERIE" | "PELÍCULA";
 
@@ -47,12 +48,19 @@ export default function CatalogPage({ type, items }: Props) {
   const router = useRouter();
   const [search, setSearch]     = useState("");
   const [statusF, setStatusF]   = useState("all");
+  const [genreF, setGenreF]     = useState("all");
+  const [yearF, setYearF]       = useState("all");
+  const [langF, setLangF]       = useState("all");
   const [sortKey, setSortKey]   = useState<keyof CatalogItem>("id");
   const [sortDir, setSortDir]   = useState<"asc"|"desc">("desc");
   const [showFilters, setShowFilters] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const color = TYPE_COLOR[type];
+
+  const genreOptions = Array.from(new Set(items.map(i => i.genre))).sort();
+  const yearOptions   = Array.from(new Set(items.map(i => String(i.year)))).sort((a, b) => Number(b) - Number(a));
+  const langOptions   = Array.from(new Set(items.map(i => i.lang))).sort();
 
   async function handleDelete(item: CatalogItem) {
     if (!window.confirm(`¿Eliminar "${item.title}" del catálogo? Esta acción no se puede deshacer.`)) return;
@@ -75,6 +83,9 @@ export default function CatalogPage({ type, items }: Props) {
       const q = search.toLowerCase();
       if (q && !i.title.toLowerCase().includes(q) && !i.genre.toLowerCase().includes(q)) return false;
       if (statusF !== "all" && i.status !== statusF) return false;
+      if (genreF !== "all" && i.genre !== genreF) return false;
+      if (yearF !== "all" && String(i.year) !== yearF) return false;
+      if (langF !== "all" && i.lang !== langF) return false;
       return true;
     })
     .sort((a, b) => {
@@ -124,17 +135,38 @@ export default function CatalogPage({ type, items }: Props) {
       {/* ── Filters panel ────────────────────────────────── */}
       {showFilters && (
         <div className="glass-card p-4 flex flex-wrap gap-4">
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1" style={{ width: 160 }}>
             <label className="text-xs" style={{ color: "var(--text-muted)" }}>Estado</label>
-            <select
-              value={statusF} onChange={e => setStatusF(e.target.value)}
-              className="admin-input" style={{ width: "auto", minWidth: 140 }}
-            >
-              <option value="all">Todos</option>
-              <option value="on">Publicado</option>
-              <option value="draft">Borrador</option>
-              <option value="off">Oculto</option>
-            </select>
+            <Select
+              value={statusF} onChange={setStatusF} color={color}
+              options={[
+                { value: "all", label: "Todos" },
+                { value: "on", label: "Publicado" },
+                { value: "draft", label: "Borrador" },
+                { value: "off", label: "Oculto" },
+              ]}
+            />
+          </div>
+          <div className="flex flex-col gap-1" style={{ width: 160 }}>
+            <label className="text-xs" style={{ color: "var(--text-muted)" }}>Género</label>
+            <Select
+              value={genreF} onChange={setGenreF} color={color}
+              options={[{ value: "all", label: "Todos" }, ...genreOptions.map(g => ({ value: g, label: g }))]}
+            />
+          </div>
+          <div className="flex flex-col gap-1" style={{ width: 160 }}>
+            <label className="text-xs" style={{ color: "var(--text-muted)" }}>Año</label>
+            <Select
+              value={yearF} onChange={setYearF} color={color}
+              options={[{ value: "all", label: "Todos" }, ...yearOptions.map(y => ({ value: y, label: y }))]}
+            />
+          </div>
+          <div className="flex flex-col gap-1" style={{ width: 160 }}>
+            <label className="text-xs" style={{ color: "var(--text-muted)" }}>Idioma</label>
+            <Select
+              value={langF} onChange={setLangF} color={color}
+              options={[{ value: "all", label: "Todos" }, ...langOptions.map(l => ({ value: l, label: l }))]}
+            />
           </div>
         </div>
       )}

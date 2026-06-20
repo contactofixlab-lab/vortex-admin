@@ -10,6 +10,7 @@ import {
   Tag, Info, List, Radio,
 } from "lucide-react";
 import { crearContenido } from "@/app/actions";
+import Select from "./Select";
 
 /* ═══════════════════════════ TIPOS ═════════════════════════ */
 export type ContentType = "ANIME" | "SERIE" | "PELÍCULA";
@@ -558,25 +559,21 @@ export default function ContentFormClient({ type }: { type: ContentType }) {
       <Section title="Clasificación" icon={Tag} color="var(--neon-violet)">
         <Grid cols={2}>
           <Field label="Género principal" required>
-            <select
-              className="admin-input"
+            <Select
               value={genre}
-              onChange={e => setGenre(e.target.value)}
-              style={{ appearance: "none", cursor: "pointer" }}
-            >
-              <option value="">Seleccionar género...</option>
-              {GENRES.map(g => <option key={g} value={g}>{g}</option>)}
-            </select>
+              onChange={setGenre}
+              placeholder="Seleccionar género..."
+              color={meta.color}
+              options={GENRES.map(g => ({ value: g, label: g }))}
+            />
           </Field>
           <Field label="Idioma / Audio">
-            <select
-              className="admin-input"
+            <Select
               value={lang}
-              onChange={e => setLang(e.target.value)}
-              style={{ appearance: "none", cursor: "pointer" }}
-            >
-              {LANGS.map(l => <option key={l} value={l}>{l}</option>)}
-            </select>
+              onChange={setLang}
+              color={meta.color}
+              options={LANGS.map(l => ({ value: l, label: l }))}
+            />
           </Field>
           <Field label="Clasificación de edad">
             <div className="flex flex-wrap gap-2">
