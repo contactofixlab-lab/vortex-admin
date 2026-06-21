@@ -9,23 +9,37 @@ type ActionResult = { ok: true } | { ok: false; error: string };
 export async function loginAdmin(email: string, password: string): Promise<ActionResult> {
   const emailLimpio = email.trim().toLowerCase();
 
-  const rows = await sql`
-    SELECT id, password_hash FROM admin_usuario
-    WHERE email = ${emailLimpio} AND activo = true
-    LIMIT 1
-  `;
+  try {
+    const rows = await sql`
+      SELECT id, password_hash, activo FROM admin_usuario
+      WHERE email = ${emailLimpio}
+      LIMIT 1
+    `;
 
-  if (rows.length === 0) {
-    return { ok: false, error: "Email o contraseña incorrectos." };
+    if (rows.length === 0) {
+      console.error(`[LOGIN] Usuario no encontrado: ${emailLimpio}`);
+      return { ok: false, error: "Email o contraseña incorrectos." };
+    }
+
+    const usuario = rows[0];
+    if (!usuario.activo) {
+      console.error(`[LOGIN] Usuario inactivo: ${emailLimpio}`);
+      return { ok: false, error: "El usuario está inactivo." };
+    }
+
+    const valido = await bcrypt.compare(password, usuario.password_hash as string);
+    if (!valido) {
+      console.error(`[LOGIN] Contraseña incorrecta para: ${emailLimpio}`);
+      return { ok: false, error: "Email o contraseña incorrectos." };
+    }
+
+    await crearSesionAdmin(usuario.id as number);
+    console.log(`[LOGIN] ✅ Sesión creada para: ${emailLimpio}`);
+    return { ok: true };
+  } catch (error) {
+    console.error(`[LOGIN] Error:`, error);
+    return { ok: false, error: "Error al iniciar sesión. Intenta nuevamente." };
   }
-
-  const valido = await bcrypt.compare(password, rows[0].password_hash as string);
-  if (!valido) {
-    return { ok: false, error: "Email o contraseña incorrectos." };
-  }
-
-  await crearSesionAdmin(rows[0].id as number);
-  return { ok: true };
 }
 
 export async function cerrarSesionAdmin() {
