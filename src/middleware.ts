@@ -3,8 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Las rutas de login no necesitan protección
-  if (pathname === "/login") {
+  // Las rutas de login y setup no necesitan protección
+  if (pathname === "/login" || pathname === "/setup" || pathname.startsWith("/api/")) {
     return NextResponse.next();
   }
 
