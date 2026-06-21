@@ -72,23 +72,33 @@ export async function crearUsuarioAdmin(
   }
 
   try {
+    console.log(`[CREAR_USUARIO] Iniciando creación para: ${emailLimpio}`);
+
     const existente = await sql`
       SELECT 1 FROM admin_usuario WHERE email = ${emailLimpio} LIMIT 1
     `;
 
     if (existente.length > 0) {
+      console.log(`[CREAR_USUARIO] Email ya existe: ${emailLimpio}`);
       return { ok: false, error: "El email ya está registrado." };
     }
 
+    console.log(`[CREAR_USUARIO] Generando hash para contraseña...`);
     const hash = await bcrypt.hash(password, 10);
-    await sql`
-      INSERT INTO admin_usuario (email, nombre, password_hash, rol)
-      VALUES (${emailLimpio}, ${nombreLimpio}, ${hash}, ${rol})
+    console.log(`[CREAR_USUARIO] Hash generado, insertando en BD...`);
+
+    const result = await sql`
+      INSERT INTO admin_usuario (email, nombre, password_hash, rol, activo)
+      VALUES (${emailLimpio}, ${nombreLimpio}, ${hash}, ${rol}, true)
+      RETURNING id
     `;
 
+    console.log(`[CREAR_USUARIO] ✅ Usuario creado con ID: ${result[0].id}`);
     return { ok: true };
   } catch (err) {
-    return { ok: false, error: "Error al crear usuario." };
+    console.error(`[CREAR_USUARIO] ❌ Error:`, err);
+    const errorMsg = err instanceof Error ? err.message : 'Desconocido';
+    return { ok: false, error: `Error: ${errorMsg}` };
   }
 }
 
