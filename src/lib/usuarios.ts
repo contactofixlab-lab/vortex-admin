@@ -19,14 +19,14 @@ export async function obtenerTodosLosUsuarios(): Promise<UsuarioRegistro[]> {
       u.id,
       u.nombre,
       u.email,
-      COALESCE(u.telefono, NULL) as "telefono",
-      COALESCE(u.pais, NULL) as "pais",
-      COALESCE(u.username, NULL) as "username",
+      u.telefono,
+      u.pais,
+      u.username,
       u.created_at as "createdAt",
       MAX(s.expires_at) as "maxExpires"
     FROM usuario u
     LEFT JOIN sesion s ON s.usuario_id = u.id
-    GROUP BY u.id, u.nombre, u.email, u.created_at
+    GROUP BY u.id, u.nombre, u.email, u.telefono, u.pais, u.username, u.created_at
     ORDER BY u.created_at DESC
   `;
 
