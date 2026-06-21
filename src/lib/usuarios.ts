@@ -5,6 +5,7 @@ export type UsuarioRegistro = {
   id: number;
   nombre: string;
   email: string;
+  // Campos opcionales - existirán después de ejecutar ALTER TABLE en Neon
   telefono?: string;
   pais?: string;
   username?: string;
@@ -19,9 +20,6 @@ export async function obtenerTodosLosUsuarios(): Promise<UsuarioRegistro[]> {
       u.id,
       u.nombre,
       u.email,
-      COALESCE(u.telefono, NULL) as "telefono",
-      COALESCE(u.pais, NULL) as "pais",
-      COALESCE(u.username, NULL) as "username",
       u.created_at as "createdAt",
       MAX(s.expires_at) as "maxExpires"
     FROM usuario u
