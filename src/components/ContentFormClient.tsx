@@ -255,6 +255,9 @@ export default function ContentFormClient({ type }: { type: ContentType }) {
   /* Episodios */
   const [episodes,  setEpisodes]  = useState<EpisodeRow[]>([]);
   const [bulkCount, setBulkCount] = useState(12);
+  const [showBulkModal, setShowBulkModal] = useState(false);
+  const [bulkInput, setBulkInput] = useState("");
+  const [bulkMode, setBulkMode] = useState<"count" | "titles" | "range">("count");
   const nextId = useRef(1);
 
   /* UI */
@@ -293,6 +296,65 @@ export default function ContentFormClient({ type }: { type: ContentType }) {
       const filtered = eps.filter(e => e.id !== id);
       return filtered.map((e, i) => ({ ...e, num: i + 1 }));
     });
+  }
+
+  function processBulkInput() {
+    const start = episodes.length + 1;
+    let newEps: EpisodeRow[] = [];
+
+    if (bulkMode === "count") {
+      // Generar N episodios vacíos
+      const count = Math.max(1, Math.min(200, bulkCount));
+      newEps = Array.from({ length: count }, (_, i) => ({
+        id: nextId.current++,
+        num: start + i,
+        title: `Episodio ${start + i}`,
+        urls: { onedrive: "", gdrive: "", mega: "" },
+      }));
+    } else if (bulkMode === "range") {
+      // Parsear "1-12" o "1,2,3,4..."
+      const parts = bulkInput.includes("-")
+        ? bulkInput.split("-").map(p => parseInt(p.trim()))
+        : bulkInput.split(",").map(p => parseInt(p.trim())).filter(n => !isNaN(n));
+
+      if (parts.length === 2 && parts[0] < parts[1]) {
+        // Rango como "1-12"
+        const [first, last] = parts;
+        newEps = Array.from({ length: last - first + 1 }, (_, i) => ({
+          id: nextId.current++,
+          num: start + i,
+          title: `Episodio ${first + i}`,
+          urls: { onedrive: "", gdrive: "", mega: "" },
+        }));
+      } else {
+        // Lista individual como "1,2,3,4"
+        newEps = parts.map((num, i) => ({
+          id: nextId.current++,
+          num: start + i,
+          title: `Episodio ${num}`,
+          urls: { onedrive: "", gdrive: "", mega: "" },
+        }));
+      }
+    } else if (bulkMode === "titles") {
+      // Pegar títulos, uno por línea
+      const titles = bulkInput
+        .split("\n")
+        .map(t => t.trim())
+        .filter(t => t.length > 0);
+
+      newEps = titles.map((title, i) => ({
+        id: nextId.current++,
+        num: start + i,
+        title,
+        urls: { onedrive: "", gdrive: "", mega: "" },
+      }));
+    }
+
+    if (newEps.length > 0) {
+      setEpisodes(eps => [...eps, ...newEps]);
+      setBulkInput("");
+      setShowBulkModal(false);
+    }
   }
 
   function validate() {
@@ -681,20 +743,187 @@ export default function ContentFormClient({ type }: { type: ContentType }) {
             <button type="button" className="btn-primary" onClick={addEpisode} style={{ padding: "7px 14px" }}>
               <Plus size={14} /> Episodio
             </button>
-            <div className="flex items-center gap-2 ml-auto">
-              <input
-                type="number" min={1} max={200}
-                className="admin-input text-xs text-center"
-                style={{ width: 60, height: 32, padding: "4px 8px" }}
-                value={bulkCount}
-                onChange={e => setBulkCount(Math.max(1, Number(e.target.value)))}
-              />
-              <button type="button" className="btn-ghost" onClick={bulkAddEpisodes}
-                style={{ padding: "6px 12px", fontSize: "0.78rem" }}>
-                <Plus size={13} /> Agregar {bulkCount} de una vez
-              </button>
-            </div>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => setShowBulkModal(true)}
+              style={{ padding: "7px 14px", background: "rgba(0,245,255,0.15)", border: "1px solid rgba(0,245,255,0.3)", color: "var(--neon-cyan)" }}>
+              <Upload size={14} /> Agregar masivo
+            </button>
           </div>
+
+          {/* Modal de carga masiva */}
+          {showBulkModal && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowBulkModal(false)}>
+              <div
+                className="glass-card max-w-2xl w-full max-h-96 overflow-y-auto"
+                onClick={e => e.stopPropagation()}
+                style={{ background: "linear-gradient(135deg, rgba(30,20,60,0.95), rgba(10,8,28,0.92))" }}>
+
+                <div className="p-5 border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-bold" style={{ color: "var(--neon-cyan)" }}>
+                      Agregar episodios masivamente
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setShowBulkModal(false)}
+                      className="p-1 hover:bg-white/10 rounded transition-colors">
+                      <X size={18} style={{ color: "var(--text-muted)" }} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-5 space-y-4">
+                  {/* Modos */}
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: "count", label: "Por cantidad", desc: "Genera 1-200 episodios" },
+                      { id: "range", label: "Por rango", desc: "Ej: 1-12 o 1,2,3" },
+                      { id: "titles", label: "Por títulos", desc: "Pega títulos línea por línea" },
+                    ].map(mode => (
+                      <button
+                        key={mode.id}
+                        type="button"
+                        onClick={() => { setBulkMode(mode.id as any); setBulkInput(""); }}
+                        className="p-3 rounded-lg text-xs transition-all text-left"
+                        style={{
+                          background: bulkMode === mode.id
+                            ? "rgba(0,245,255,0.15)"
+                            : "rgba(255,255,255,0.03)",
+                          border: bulkMode === mode.id
+                            ? "1px solid rgba(0,245,255,0.4)"
+                            : "1px solid rgba(255,255,255,0.06)",
+                          color: bulkMode === mode.id ? "var(--neon-cyan)" : "var(--text-secondary)",
+                        }}>
+                        <div className="font-semibold">{mode.label}</div>
+                        <div style={{ color: "var(--text-muted)", fontSize: "0.7rem", marginTop: "2px" }}>{mode.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Input según modo */}
+                  {bulkMode === "count" && (
+                    <div>
+                      <label className="text-xs font-semibold block mb-2" style={{ color: "var(--text-secondary)" }}>
+                        Cantidad de episodios
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          min={1}
+                          max={200}
+                          value={bulkCount}
+                          onChange={e => setBulkCount(Math.max(1, Math.min(200, Number(e.target.value))))}
+                          className="admin-input flex-1"
+                          placeholder="12"
+                        />
+                      </div>
+                      <p className="text-xs mt-2" style={{ color: "var(--text-muted)" }}>
+                        Se crearán {bulkCount} episodios numerados automáticamente
+                      </p>
+                    </div>
+                  )}
+
+                  {bulkMode === "range" && (
+                    <div>
+                      <label className="text-xs font-semibold block mb-2" style={{ color: "var(--text-secondary)" }}>
+                        Rango o lista de episodios
+                      </label>
+                      <textarea
+                        value={bulkInput}
+                        onChange={e => setBulkInput(e.target.value)}
+                        placeholder="Ej: 1-12 o 1,2,3,4,5"
+                        className="admin-input w-full text-sm"
+                        rows={3}
+                      />
+                      <p className="text-xs mt-2" style={{ color: "var(--text-muted)" }}>
+                        Usa "1-12" para un rango o "1,2,3,4" para episodios específicos
+                      </p>
+                    </div>
+                  )}
+
+                  {bulkMode === "titles" && (
+                    <div>
+                      <label className="text-xs font-semibold block mb-2" style={{ color: "var(--text-secondary)" }}>
+                        Títulos de episodios
+                      </label>
+                      <textarea
+                        value={bulkInput}
+                        onChange={e => setBulkInput(e.target.value)}
+                        placeholder={`Episodio 1: El comienzo\nEpisodio 2: El viaje\nEpisodio 3: La batalla`}
+                        className="admin-input w-full text-sm"
+                        rows={5}
+                      />
+                      <p className="text-xs mt-2" style={{ color: "var(--text-muted)" }}>
+                        Un título por línea. Se numerarán automáticamente
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Preview */}
+                  {bulkInput && bulkMode !== "count" && (
+                    <div className="bg-black/30 rounded-lg p-3 text-xs">
+                      <div className="font-semibold mb-2" style={{ color: "var(--neon-cyan)" }}>Preview:</div>
+                      <div className="space-y-1 max-h-32 overflow-y-auto">
+                        {bulkMode === "titles"
+                          ? bulkInput.split("\n").filter(t => t.trim()).map((title, i) => (
+                              <div key={i} style={{ color: "var(--text-secondary)" }}>
+                                {i + episodes.length + 1}. {title.trim()}
+                              </div>
+                            ))
+                          : (
+                            (() => {
+                              const parts = bulkInput.includes("-")
+                                ? bulkInput.split("-").map(p => parseInt(p.trim()))
+                                : bulkInput.split(",").map(p => parseInt(p.trim())).filter(n => !isNaN(n));
+                              let preview: string[] = [];
+                              if (parts.length === 2 && parts[0] < parts[1]) {
+                                const [first, last] = parts;
+                                preview = Array.from({ length: last - first + 1 }, (_, i) =>
+                                  `${episodes.length + i + 1}. Episodio ${first + i}`
+                                );
+                              } else {
+                                preview = parts.map((num, i) =>
+                                  `${episodes.length + i + 1}. Episodio ${num}`
+                                );
+                              }
+                              return preview.slice(0, 10).map((p, i) => (
+                                <div key={i} style={{ color: "var(--text-secondary)" }}>{p}</div>
+                              ));
+                            })()
+                          )
+                        }
+                        {bulkMode === "titles" && bulkInput.split("\n").filter(t => t.trim()).length > 10 && (
+                          <div style={{ color: "var(--text-muted)" }}>... y {bulkInput.split("\n").filter(t => t.trim()).length - 10} más</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Acciones */}
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={processBulkInput}
+                      className="btn-primary flex-1"
+                      style={{
+                        opacity: (bulkMode === "count" && bulkCount > 0) || (bulkMode !== "count" && bulkInput.trim()) ? 1 : 0.5,
+                        cursor: (bulkMode === "count" && bulkCount > 0) || (bulkMode !== "count" && bulkInput.trim()) ? "pointer" : "not-allowed",
+                      }}>
+                      Agregar episodios
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowBulkModal(false)}
+                      className="btn-ghost flex-1">
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {episodes.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-8"
