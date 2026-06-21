@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import AdminShell from "@/components/AdminShell";
 import { getSesionAdmin } from "@/lib/auth-admin";
 import { obtenerTodosLosUsuariosAdmin } from "@/app/admin-actions";
 import ConfiguracionClientPage from "@/components/ConfiguracionClientPage";
@@ -12,5 +13,9 @@ export default async function ConfiguracionPage() {
 
   const usuarios = await obtenerTodosLosUsuariosAdmin();
 
-  return <ConfiguracionClientPage usuarios={usuarios} rolActual={sesion.rol} />;
+  return (
+    <AdminShell>
+      <ConfiguracionClientPage usuarios={usuarios} rolActual={sesion.rol} />
+    </AdminShell>
+  );
 }
