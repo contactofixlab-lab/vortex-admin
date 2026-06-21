@@ -57,11 +57,11 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         pointerEvents: "none",
       }} />
 
-      {/* ── Logo — aumentado 2.5x ── */}
+      {/* ── Logo — grande pero contenedor igual ── */}
       <div
-        className="flex items-center justify-center px-4 flex-shrink-0"
+        className="flex items-center justify-center px-4 flex-shrink-0 relative overflow-hidden"
         style={{
-          height: 180,
+          height: 80,
           borderBottom: "1px solid rgba(255,255,255,0.07)",
           background: "rgba(191,95,255,0.04)",
         }}
@@ -69,7 +69,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         <motion.div
           animate={{ width: collapsed ? 90 : 160, height: collapsed ? 90 : 160 }}
           transition={{ duration: 0.3 }}
-          className="relative flex-shrink-0"
+          className="relative flex-shrink-0 -my-8"
         >
           <Image src="/vortex logo.png" alt="Vortex" fill sizes={collapsed ? "90px" : "160px"} style={{ objectFit: "contain" }} />
         </motion.div>
