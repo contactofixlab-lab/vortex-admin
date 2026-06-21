@@ -140,17 +140,26 @@ export default function UsuariosClient({ usuarios }: UsuariosClientProps) {
                     background: "rgba(255,255,255,0.02)",
                   }}
                 >
-                  <th className="px-6 py-3.5 text-left font-semibold" style={{ color: "var(--text-secondary)" }}>
+                  <th className="px-4 py-3 text-left font-semibold text-xs" style={{ color: "var(--text-secondary)" }}>
                     Nombre
                   </th>
-                  <th className="px-6 py-3.5 text-left font-semibold" style={{ color: "var(--text-secondary)" }}>
+                  <th className="px-4 py-3 text-left font-semibold text-xs" style={{ color: "var(--text-secondary)" }}>
+                    Usuario
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold text-xs" style={{ color: "var(--text-secondary)" }}>
                     Correo
                   </th>
-                  <th className="px-6 py-3.5 text-left font-semibold" style={{ color: "var(--text-secondary)" }}>
-                    Fecha de Registro
+                  <th className="px-4 py-3 text-left font-semibold text-xs" style={{ color: "var(--text-secondary)" }}>
+                    Teléfono
                   </th>
-                  <th className="px-6 py-3.5 text-left font-semibold" style={{ color: "var(--text-secondary)" }}>
-                    Última Conexión
+                  <th className="px-4 py-3 text-left font-semibold text-xs" style={{ color: "var(--text-secondary)" }}>
+                    País
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold text-xs" style={{ color: "var(--text-secondary)" }}>
+                    Registro
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold text-xs" style={{ color: "var(--text-secondary)" }}>
+                    Conexión
                   </th>
                 </tr>
               </thead>
@@ -167,18 +176,26 @@ export default function UsuariosClient({ usuarios }: UsuariosClientProps) {
                         background: idx % 2 === 0 ? "transparent" : "rgba(255,255,255,0.01)",
                       }}
                     >
-                      <td className="px-6 py-3.5" style={{ color: "var(--text-primary)" }}>
+                      <td className="px-4 py-3 text-sm" style={{ color: "var(--text-primary)" }}>
                         {usuario.nombre}
                       </td>
-                      <td className="px-6 py-3.5 font-mono text-xs" style={{ color: "var(--neon-cyan)" }}>
+                      <td className="px-4 py-3 text-xs font-mono" style={{ color: "var(--neon-violet)" }}>
+                        {usuario.username || "—"}
+                      </td>
+                      <td className="px-4 py-3 text-xs font-mono" style={{ color: "var(--neon-cyan)" }}>
                         {usuario.email}
                       </td>
-                      <td className="px-6 py-3.5" style={{ color: "var(--text-secondary)" }}>
+                      <td className="px-4 py-3 text-sm" style={{ color: "var(--text-secondary)" }}>
+                        {usuario.telefono || "—"}
+                      </td>
+                      <td className="px-4 py-3 text-sm" style={{ color: "var(--text-secondary)" }}>
+                        {usuario.pais || "—"}
+                      </td>
+                      <td className="px-4 py-3 text-xs" style={{ color: "var(--text-secondary)" }}>
                         {usuario.createdAt}
                       </td>
-                      <td className="px-6 py-3.5">
+                      <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          {/* Indicador de conexión — puntito brillante */}
                           <div
                             className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                             style={{
@@ -191,8 +208,8 @@ export default function UsuariosClient({ usuarios }: UsuariosClientProps) {
                                 : "pulse-red 2s ease-in-out infinite",
                             }}
                           />
-                          <span style={{ color: "var(--text-secondary)" }}>
-                            Última conexión: {usuario.ultimaConexion}
+                          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                            {usuario.ultimaConexion}
                           </span>
                         </div>
                       </td>

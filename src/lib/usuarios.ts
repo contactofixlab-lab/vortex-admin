@@ -5,6 +5,9 @@ export type UsuarioRegistro = {
   id: number;
   nombre: string;
   email: string;
+  telefono?: string;
+  pais?: string;
+  username?: string;
   createdAt: string;
   createdAtRaw: string;
   ultimaConexion: string;
@@ -16,11 +19,14 @@ export async function obtenerTodosLosUsuarios(): Promise<UsuarioRegistro[]> {
       u.id,
       u.nombre,
       u.email,
+      u.telefono,
+      u.pais,
+      u.username,
       u.created_at as "createdAt",
       MAX(s.expires_at) as "maxExpires"
     FROM usuario u
     LEFT JOIN sesion s ON s.usuario_id = u.id
-    GROUP BY u.id, u.nombre, u.email, u.created_at
+    GROUP BY u.id, u.nombre, u.email, u.telefono, u.pais, u.username, u.created_at
     ORDER BY u.created_at DESC
   `;
 
@@ -41,6 +47,9 @@ export async function obtenerTodosLosUsuarios(): Promise<UsuarioRegistro[]> {
       id: r.id as number,
       nombre: r.nombre as string,
       email: r.email as string,
+      telefono: r.telefono as string | undefined,
+      pais: r.pais as string | undefined,
+      username: r.username as string | undefined,
       createdAt: new Date(r.createdAt as string).toLocaleString("es-CL"),
       createdAtRaw: r.createdAt as string,
       ultimaConexion,
