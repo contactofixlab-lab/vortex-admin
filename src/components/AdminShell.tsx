@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname } from "next/navigation";
-import { Bell, Search } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Bell, Search, LogOut, Settings } from "lucide-react";
+import { cerrarSesionAdmin } from "@/app/admin-actions";
 import Sidebar from "./Sidebar";
 
 const TITLES: Record<string, { title: string; sub: string }> = {
@@ -19,8 +20,16 @@ const TITLES: Record<string, { title: string; sub: string }> = {
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const meta = TITLES[pathname] ?? { title: "Vortex Admin", sub: "" };
+
+  async function handleLogout() {
+    await cerrarSesionAdmin();
+    router.push("/login");
+    router.refresh();
+  }
 
   const sidebarW = collapsed ? "var(--sb-w-col)" : "var(--sb-w)";
   const paddingLeft = `calc(${sidebarW} + var(--sb-gap) * 2)`;
@@ -114,20 +123,55 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               />
             </button>
 
-            {/* Avatar */}
-            <div
-              className="flex items-center justify-center rounded-xl text-xs font-black"
-              style={{
-                width: 34, height: 34,
-                background: "linear-gradient(135deg, rgba(191,95,255,0.2), rgba(191,95,255,0.08))",
-                border: "1px solid rgba(191,95,255,0.4)",
-                borderTopColor: "rgba(191,95,255,0.6)",
-                color: "var(--neon-violet)",
-                fontFamily: "var(--font-orbitron)",
-                boxShadow: "0 2px 8px rgba(191,95,255,0.15)",
-              }}
-            >
-              VA
+            {/* Avatar con dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowDropdown(!showDropdown)}
+                className="flex items-center justify-center rounded-xl text-xs font-black transition-all hover:scale-105"
+                style={{
+                  width: 34, height: 34,
+                  background: "linear-gradient(135deg, rgba(191,95,255,0.2), rgba(191,95,255,0.08))",
+                  border: "1px solid rgba(191,95,255,0.4)",
+                  borderTopColor: "rgba(191,95,255,0.6)",
+                  color: "var(--neon-violet)",
+                  fontFamily: "var(--font-orbitron)",
+                  boxShadow: "0 2px 8px rgba(191,95,255,0.15)",
+                  cursor: "pointer",
+                }}
+              >
+                VA
+              </button>
+
+              {/* Dropdown menu */}
+              {showDropdown && (
+                <div
+                  className="absolute right-0 mt-2 w-48 rounded-lg z-50"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(20,15,45,0.95), rgba(8,6,20,0.90))",
+                    border: "1px solid rgba(191,95,255,0.3)",
+                    boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+                    backdropFilter: "blur(20px)",
+                  }}
+                >
+                  <button
+                    onClick={() => router.push("/configuracion")}
+                    className="w-full flex items-center gap-2 px-4 py-3 text-sm hover:bg-white/5 transition-colors border-b"
+                    style={{ borderColor: "rgba(191,95,255,0.2)", color: "var(--text-primary)" }}
+                  >
+                    <Settings size={14} style={{ color: "var(--neon-cyan)" }} />
+                    Configuración
+                  </button>
+
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2 px-4 py-3 text-sm hover:bg-white/5 transition-colors"
+                    style={{ color: "var(--neon-pink)" }}
+                  >
+                    <LogOut size={14} />
+                    Cerrar Sesión
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>
